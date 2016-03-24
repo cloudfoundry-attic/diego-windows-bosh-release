@@ -1,0 +1,7 @@
+---
+name: consul
+
+dependencies:
+
+files:
+- consul/consul_0.5.2_windows_386.zip
