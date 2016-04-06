@@ -1,9 +1,9 @@
 ---
-name: garden-windows
+name: diego-windows
 director_uuid: 8b3d34c7-6262-4c1e-97df-c02105090d2f
 
 releases:
-- name: diego
+- name: diego-windows
   version: latest
 
 networks:
@@ -48,7 +48,7 @@ jobs:
 - name: windows-cell
   templates:
   - name: rep
-    release: diego
+    release: diego-windows
   instances: 1
   resource_pool: default
   networks:
