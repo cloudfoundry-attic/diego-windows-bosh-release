@@ -1,0 +1,51 @@
+<%=
+  CONF_DIR="/var/vcap/jobs/rep/config"
+
+  if p("diego.rep.bbs.require_ssl")
+    bbs_sec_flags=" \
+   -bbsClientCert=#{CONF_DIR}/certs/bbs/client.crt \
+   -bbsClientKey=#{CONF_DIR}/certs/bbs/client.key \
+   -bbsCACert=#{CONF_DIR}/certs/bbs/ca.crt"
+   bbs_api_url="https://" + p("diego.rep.bbs.api_location")
+  else
+    bbs_sec_flags=""
+    bbs_api_url="http://" + p("diego.rep.bbs.api_location")
+  end
+  preloaded_rootfses = p("diego.rep.preloaded_rootfses").map { |rootfs|
+    %{-preloadedRootFS="#{rootfs}"}
+  }.join(" ")
+
+  %{/var/vcap/packages/rep/rep.exe #{bbs_sec_flags} \
+  -bbsAddress="#{bbs_api_url}" \
+  -consulCluster="http://127.0.0.1:#{p("diego.rep.consul_agent_port")}" \
+  -debugAddr="#{p("diego.rep.debug_addr")}" \
+  -listenAddr="#{p("diego.rep.listen_addr")}" \
+  #{preloaded_rootfses} \
+  -cellID=#{spec.job.name}-#{spec.index} \
+  -zone=#{p("diego.rep.zone")} \
+  -pollingInterval=30s \
+  -evacuationPollingInterval=10s \
+  -evacuationTimeout=600s \
+  -skipCertVerify=true \
+  -gardenNetwork="#{p("diego.executor.garden.network")}" \
+  -gardenAddr="127.0.0.1:9241" \
+  -memoryMB=auto \
+  -diskMB=auto \
+  -containerMaxCpuShares=1 \
+  -cachePath=#{p("diego.executor.cache_path")} \
+  -maxCacheSizeInBytes=5000000000 \
+  -exportNetworkEnvVars=true \
+  -healthyMonitoringInterval=30s \
+  -unhealthyMonitoringInterval="0.5s" \
+  -createWorkPoolSize=32 \
+  -deleteWorkPoolSize=32 \
+  -readWorkPoolSize=64 \
+  -metricsWorkPoolSize=8 \
+  -healthCheckWorkPoolSize=64 \
+  -tempDir=/var/vcap/data/executor/tmp \
+  -gardenHealthcheckProcessUser=vcap \
+  -gardenHealthcheckProcessPath=C:\\windows\\system32\\cmd.exe \
+  -gardenHealthcheckProcessArgs="/c,dir" \
+  -logLevel=debug
+  }
+  %>
