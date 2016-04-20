@@ -1,0 +1,35 @@
+---
+jobs:
+  - name: bump-loggregator
+    public: true
+    plan:
+      - get: loggregator
+        trigger: true
+      - task: update-blobs
+        config:
+          platform: linux
+          image: docker:///pivotalgreenhouse/bosh
+          inputs: [{name: loggregator}]
+          run:
+            path: loggregator/bin/update-metron-windows-blob
+          params:
+            OUTPUT_DIR: bumped-loggregator
+            ACCESS_KEY_ID: {{BLOBSTORE_ACCESS_KEY}}
+            SECRET_ACCESS_KEY: {{BLOBSTORE_SECRET_KEY}}
+          outputs: [{name: bumped-loggregator}]
+      - put: bumped-loggregator
+        resource: loggregator-fork
+        params: {repository: loggregator-fork}
+
+resources:
+  - name: loggregator
+    type: git
+    source:
+      uri: https://github.com/cloudfoundry/loggregator.git
+      paths: [src/metron]
+  - name: loggregator-fork
+    type: git
+    source:
+      uri: git@github.com:pivotal-cf/loggregator.git
+      branch: metron-windows-job
+      private_key: {{LOGGREGATOR_GITHUB_KEY}}
